@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Inquity_List>
+
+@* 
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 
+*@
+
+<h4>Messages for Properties</h4>
+<div class="my-property">
+    <!-- Property Cards -->
+    <div class="row">
+        <!-- Horizontal Card for each property -->
+        <div class="col-md-12 mb-4">
+            <!-- Message Cards -->
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var message in Model)
+                {
+                    <div class="message-card mb-3">
+                        <div class="message-header">
+                            <span class="sender-name">@message.UserName</span>
+                            <span class="message-date">@message.DateSent.ToString("MMM dd, yyyy, hh:mm tt")</span> <!-- تنسيق التاريخ -->
+                        </div>
+                        <span class="sender-phone">@message.PhoneNumber</span>
+                        <div class="message-body">
+                            <p>@message.Message</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-md-12 mb-4">
+                    <p>No Massages found.</p>
+                </div>
+            }
+        </div>
+        <!-- Repeat for other properties -->
+    </div>
+</div>
