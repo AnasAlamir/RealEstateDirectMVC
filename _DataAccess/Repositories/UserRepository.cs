@@ -28,7 +28,7 @@ namespace API_Project.DataAccess.Repositories
 
         public User? GetByEmailAndPassword(string email, string password)
         {
-            return _dbSet.FirstOrDefault(User => User.Email == email && User.Password == password);
+            return _dbSet.FirstOrDefault(User => User.Email == email && User.PasswordHash == password);
         }
 
         public IEnumerable<Property> GetMyProperties(int UserId)

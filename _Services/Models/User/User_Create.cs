@@ -14,7 +14,7 @@ namespace _Services.Models.User
         [Required]
         public string Email { get; set; }
         [Required]
-        public string Password { get; set; }
+        public string PasswordHash { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
 

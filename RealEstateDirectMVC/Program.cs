@@ -1,6 +1,7 @@
 using _DataAccess;
 using _Service;
-using MVC_Project.API_Services;
+using MVC_Project.Services.API_Services;
+using MVC_Project.Services.AuthServices;
 namespace MVC_Project
 {
     public class Program
@@ -15,6 +16,9 @@ namespace MVC_Project
             builder.Services.RegisterService();
 
             builder.Services.AddScoped<IBase_API_Call, Base_API_Call>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
             builder.Services.AddControllersWithViews();
 

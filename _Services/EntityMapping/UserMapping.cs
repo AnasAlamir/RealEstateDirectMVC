@@ -17,7 +17,7 @@ namespace _Services.EntityMapping
                 F_Name = user.F_Name,
                 L_Name = user.L_Name,
                 Email = user.Email,
-                Password = user.Password,
+                PasswordHash = user.PasswordHash,
                 PhoneNumber = user.PhoneNumber,
                 Address = user.Address,
                 ProfilePicture = user.ProfilePicture
@@ -33,7 +33,7 @@ namespace _Services.EntityMapping
                 L_Name = user.L_Name,
                 FullName = user.FullName,
                 Email = user.Email,
-                Password = user.Password,
+                PasswordHash = user.PasswordHash,
                 PhoneNumber = user.PhoneNumber,
                 Address = user.Address,
                 ProfilePicture = user.ProfilePicture,

@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using System.Text;
 using _Services.Contracts;
 
-namespace MVC_Project.API_Services
+namespace MVC_Project.Services.API_Services
 {
     public interface IBase_API_Call
     {

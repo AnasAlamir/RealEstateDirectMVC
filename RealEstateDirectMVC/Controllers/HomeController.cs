@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
-using MVC_Project.API_Services;
+using MVC_Project.Services.API_Services;
 
 namespace MVC_Project.Controllers
 {

@@ -22,13 +22,15 @@ namespace application.DataAccess.Models
         public string Email { get; set; } // البريد الإلكتروني
 
         [Required]
-        public string Password { get; set; } // كلمة المرور
+        public string PasswordHash { get; set; }
 
         [Required]
         public string PhoneNumber { get; set; } // رقم التليفون
 
         public string? Address { get; set; } // عنوان المستخدم
         public string ProfilePicture { get; set; } // صورة الملف الشخصي
+
+
 
         // العلاقات
         public virtual IEnumerable<Property> Properties { get; set; } // العقارات التي يمتلكها المستخدم

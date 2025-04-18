@@ -47,7 +47,7 @@ namespace Application.Services
                 var user = _unitOfWork.User.GetByEmail(email);
                 if (user == null)
                 {
-                    throw new KeyNotFoundException("User not found.");
+                    return null;
                 }
                 return UserMapping.UserToUser_Basic(user);
             }
@@ -69,7 +69,7 @@ namespace Application.Services
 
             try
             {
-                _user.Password = HashPassword(_user.Password);
+                _user.PasswordHash = HashPassword(_user.PasswordHash);
 
                 _unitOfWork.User.Insert(UserMapping.User_CreateToUser(_user));
                 _unitOfWork.Save();
@@ -188,7 +188,7 @@ namespace Application.Services
             try
             {
                 var user = _unitOfWork.User.GetAll()
-                    .FirstOrDefault(u => u.Email == email && u.Password == HashPassword(password));
+                    .FirstOrDefault(u => u.Email == email && u.PasswordHash == HashPassword(password));
 
                 if (user == null)
                 {
@@ -213,7 +213,7 @@ namespace Application.Services
                     throw new KeyNotFoundException("User not found.");
                 }
 
-                user.Password = HashPassword(newPassword);
+                user.PasswordHash = HashPassword(newPassword);
                 _unitOfWork.User.Update(user);
                 _unitOfWork.Save();
             }
@@ -282,11 +282,11 @@ namespace Application.Services
             if (string.IsNullOrEmpty(user.Email))
                 throw new ArgumentException("User email is required.", nameof(user.Email));
 
-            if (string.IsNullOrEmpty(user.Password))
-                throw new ArgumentException("User password is required.", nameof(user.Password));
+            if (string.IsNullOrEmpty(user.PasswordHash))
+                throw new ArgumentException("User password is required.", nameof(user.PasswordHash));
 
-            if (user.Password.Length < 6)
-                throw new ArgumentException("User password must be at least 6 characters.", nameof(user.Password));
+            if (user.PasswordHash.Length < 6)
+                throw new ArgumentException("User password must be at least 6 characters.", nameof(user.PasswordHash));
 
             if (_unitOfWork.User.GetAll().Any(u => u.Email == user.Email))
                 throw new ArgumentException("User email is already registered.", nameof(user.Email));
