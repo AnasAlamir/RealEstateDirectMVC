@@ -1,7 +1,10 @@
 using _DataAccess;
 using _Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using MVC_Project.Services.API_Services;
 using MVC_Project.Services.AuthServices;
+using System.Text;
 namespace MVC_Project
 {
     public class Program
@@ -19,6 +22,22 @@ namespace MVC_Project
             builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = builder.Configuration["AppSettings:Audience"],
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)
+                            )
+                    };
+                });
 
             builder.Services.AddControllersWithViews();
 

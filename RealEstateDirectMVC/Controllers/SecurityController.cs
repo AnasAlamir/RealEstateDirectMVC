@@ -1,10 +1,12 @@
 ﻿using application.DataAccess.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MVC_Project.Models;
 using MVC_Project.Services.API_Services;
 using MVC_Project.Services.AuthServices;
+using MVC_Project.ViewModel;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -24,19 +26,22 @@ namespace MVC_Project.Controllers
         {
             _authService = authService;
         }
-        //public static User user = new User ();
         [HttpPost("register")]
-        public IActionResult Register(RegisterUserDto securityUserDto)
+        public IActionResult Register(RegisterViewModel securityUserDto)
         {
-            var user = _authService.Register(securityUserDto);
-            if (user == null)
+            try
             {
-                return BadRequest("User already exists");
+                _authService.Register(securityUserDto);
+                return Ok();
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
         [HttpPost("login")]
-        public ActionResult<string> Login(LoginUserDto securityUserDto)
+        public ActionResult<string> Login(LoginViewModel securityUserDto)
         {
             var token = _authService.Login(securityUserDto);
             if (token == null)
@@ -45,19 +50,25 @@ namespace MVC_Project.Controllers
             }
             return Ok(token);
         }
+        [Authorize]
+        [HttpGet("authEndPoint")]
+        public IActionResult AuthenticatedOnlyEndPoint()
+        {
+            return Ok("you are authenticated");
+        }
     }
-    public class LoginUserDto
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
-    }
-    public class RegisterUserDto
-    {
-        public string F_Name { get; set; }
-        public string L_Name { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string PhoneNumber { get; set; }
-    }
+    //public class LoginUserDto
+    //{
+    //    public string Email { get; set; }
+    //    public string Password { get; set; }
+    //}
+    //public class RegisterUserDto
+    //{
+    //    public string F_Name { get; set; }
+    //    public string L_Name { get; set; }
+    //    public string Email { get; set; }
+    //    public string Password { get; set; }
+    //    public string PhoneNumber { get; set; }
+    //}
 
 }

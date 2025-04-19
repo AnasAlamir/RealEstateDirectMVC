@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MVC_Project.Controllers;
+using MVC_Project.ViewModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -20,12 +21,12 @@ namespace MVC_Project.Services.AuthServices
             _configuration = configuration;
             _userService = userService;
         }
-        public _Services.Models.User.User_Basic Register(RegisterUserDto securityUserDto)
+        public void Register(RegisterViewModel securityUserDto)
         {
             _Services.Models.User.User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
             if (user_Basic?.Email == securityUserDto.Email)
             {
-                return null; // User already exists
+                throw new Exception("user already exists");
             }
             var hasher = new PasswordHasher<User_Basic>();
             string hashedPassword = hasher.HashPassword(user_Basic, securityUserDto.Password);
@@ -38,9 +39,9 @@ namespace MVC_Project.Services.AuthServices
                 PhoneNumber = securityUserDto.PhoneNumber,
             };
             _userService.CreateUser(user_Create);
-            return _userService.GetUserByEmail(user_Create.Email); ;///tmp
+            //return _userService.GetUserByEmail(user_Create.Email); ;///tmp
         }
-        public string Login(LoginUserDto securityUserDto)
+        public string Login(LoginViewModel securityUserDto)
         {
             _Services.Models.User.User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
             if (user_Basic == null)
