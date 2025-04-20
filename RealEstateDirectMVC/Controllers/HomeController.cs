@@ -8,6 +8,10 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using MVC_Project.Services.API_Services;
+using Microsoft.AspNetCore.Authorization;
+using MVC_Project.Attributes;
+using MVC_Project.Services.AuthServices;
+
 
 namespace MVC_Project.Controllers
 {
@@ -15,19 +19,22 @@ namespace MVC_Project.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IBase_API_Call _base_API_Call;
+        private readonly IAuthService _authService;
 
-        public HomeController(ILogger<HomeController> logger, IBase_API_Call base_API_Call)
+        public HomeController(ILogger<HomeController> logger, IBase_API_Call base_API_Call, IAuthService authService)
         {
             _logger = logger;
             _base_API_Call = base_API_Call;
+            _authService = authService;
         }
-
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult Index()
         {
             var cityList = _base_API_Call.GetAllCity();
+            var username = User.Identity?.Name;
             return View(cityList);
         }
-
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult Properties()
         {
             var cityList =  _base_API_Call.GetAllCity();
@@ -105,7 +112,7 @@ namespace MVC_Project.Controllers
             return View("/Views/Home/PropertyDetails.cshtml", property);
         }
 
-
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult Profile()
         {
             // ?????? ??? ?????? ?????????? ?? Claims
@@ -120,13 +127,13 @@ namespace MVC_Project.Controllers
             var user = _base_API_Call.GetUserInfo(email);
 
             // ????? ???????? ?? ??????
-            HttpContext.Session.SetString("User", JsonConvert.SerializeObject(user));
-            ViewBag.User = JsonConvert.SerializeObject(user);
-
+            //HttpContext.Session.SetString("User", JsonConvert.SerializeObject(user));
+            //ViewBag.User = JsonConvert.SerializeObject(user);
+            ViewBag.User = user;
             return View(user);
         }
 
-        public IActionResult ProfilePartial()
+        public IActionResult ProfilePartial()/////error
         {
             var userJson = HttpContext.Session.GetString("User");
             if (string.IsNullOrEmpty(userJson))

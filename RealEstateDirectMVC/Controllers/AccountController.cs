@@ -4,11 +4,11 @@ using MVC_Project.ViewModel;
 
 namespace MVC_Project.Controllers
 {
-    public class LoginController : Controller
+    public class AccountController : Controller
     {
         private readonly IAuthService _authService;
 
-        public LoginController(IAuthService authService)
+        public AccountController(IAuthService authService)
         {
             _authService = authService;
         }
@@ -23,7 +23,19 @@ namespace MVC_Project.Controllers
             {
                 return RedirectToAction("Properties", "Home");
             }
+            Response.Cookies.Append("jwt", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // set to false only if you're testing without HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(30)
+            });
             return RedirectToAction("Index", "Home");
+        }
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("jwt");
+            return RedirectToAction("Login", "Account");
         }
         public IActionResult Register()
         {
@@ -34,7 +46,7 @@ namespace MVC_Project.Controllers
             try
             {
                 _authService.Register(securityUserDto);
-                return RedirectToAction("Login", "Login");
+                return RedirectToAction("Login", "Account");
             }
             catch (Exception ex)
             {
@@ -42,15 +54,6 @@ namespace MVC_Project.Controllers
             }
 
         }
-        //[HttpPost("login")]
-        //public ActionResult<string> Login(LoginUserDto securityUserDto)
-        //{
-        //    var token = _authService.Login(securityUserDto);
-        //    if (token == null)
-        //    {
-        //        return BadRequest("Invalid email or password");
-        //    }
-        //    return Ok(token);
-        //}
+        
     }
 }
