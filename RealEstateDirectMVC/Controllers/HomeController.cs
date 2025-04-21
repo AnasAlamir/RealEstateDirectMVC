@@ -92,6 +92,7 @@ namespace MVC_Project.Controllers
         //    var property =  _base_API_Call.GetPropertyById(id);
         //    return View("/Views/Home/PropertyDetails.cshtml", property);
         //}
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult PropertyDetails(int id)
         {
             if (id == 0)
@@ -132,54 +133,77 @@ namespace MVC_Project.Controllers
             ViewBag.User = user;
             return View(user);
         }
-
-        public IActionResult ProfilePartial()/////error
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
+        public IActionResult ProfilePartial()
         {
-            var userJson = HttpContext.Session.GetString("User");
-            if (string.IsNullOrEmpty(userJson))
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Profile");
             }
 
-            var user = JsonConvert.DeserializeObject<User_Basic>(userJson);
+            var user = _base_API_Call.GetUserInfo(email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Profile");
+            }
+
             return PartialView("/Views/Partial_Views/_myProfilePartial.cshtml", user);
         }
 
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult MyPropertiesPartial()
         {
-            var userJson = HttpContext.Session.GetString("User");
-            if (string.IsNullOrEmpty(userJson))
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Profile");
             }
 
-            var user = JsonConvert.DeserializeObject<User_Basic>(userJson);
+            var user = _base_API_Call.GetUserInfo(email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Profile");
+            }
+
             var properties = _base_API_Call.GetPropertyList(user.PropertiesId);
             return PartialView("/Views/Partial_Views/_myPropertiesPartial.cshtml", properties);
         }
-
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult FavoritedPropertiesPartial()
         {
-            var userJson = HttpContext.Session.GetString("User");
-            if (string.IsNullOrEmpty(userJson))
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Profile");
             }
 
-            var user = JsonConvert.DeserializeObject<User_Basic>(userJson);
+            var user = _base_API_Call.GetUserInfo(email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Profile");
+            }
             var properties = _base_API_Call.GetPropertyList(user.FavoriteId);
             return PartialView("/Views/Partial_Views/_favoritedPropertiesPartial.cshtml", properties);
         }
-
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult MassagesPartial()
         {
-            var userJson = HttpContext.Session.GetString("User");
-            if (string.IsNullOrEmpty(userJson))
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Profile");
             }
 
-            var user = JsonConvert.DeserializeObject<User_Basic>(userJson);
+            var user = _base_API_Call.GetUserInfo(email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Profile");
+            }
             var massages = _base_API_Call.GetMassagesToUser(user.Id);
 
             return PartialView("/Views/Partial_Views/_massagesPartial.cshtml", massages);
