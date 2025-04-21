@@ -2,9 +2,9 @@
 using _Services.Models.PropertyImage;
 using application.DataAccess.Models;
 
-namespace _Services.Models.Property
+namespace MVC_Project.ViewModel
 {
-    public class Property_Create
+    public class Property_CreateViewModel
     {
         public int OwnerId { get; set; }
         public string Title { get; set; }
@@ -20,7 +20,6 @@ namespace _Services.Models.Property
         public Status Status { get; set; }
 
         public Amenities_Create? Amenities { get; set; }
-        public IEnumerable<PropertyImage_Create> Images { get; set; }
-
+        public List<IFormFile> ImageFiles { get; set; }
     }
 }

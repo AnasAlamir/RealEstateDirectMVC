@@ -17,7 +17,7 @@ namespace _Services.EntityMapping
                 Location = property.Location,
                 CityId = cityId,
                 Area = property.Area,
-                PropertyType = property.PropertyType,
+                PropertyType = property?.PropertyType??PropType.villa,
                 Bedrooms = property.Bedrooms,
                 Bathrooms = property.Bathrooms,
                 DateAdded = DateTime.Now,

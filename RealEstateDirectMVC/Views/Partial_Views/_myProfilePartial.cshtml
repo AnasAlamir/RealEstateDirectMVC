@@ -4,7 +4,9 @@
 <div class="dashboard-message contact-2 bdr clearfix">
     <div class="row">
         <div class="col-lg-12">
-            <form id="profileForm" enctype="multipart/form-data">
+            @* <form id="profileForm" enctype="multipart/form-data"> *@
+            <form asp-controller="Home" asp-action="UpdateuserInfo" method="post" id="profileForm">
+
                 <div class="row">
                     @Html.HiddenFor(m => m.Id)
                     <div class="col-lg-6 col-md-6">
@@ -64,24 +66,24 @@
 
                 console.log(userInfo); // Log userInfo data to console
 
-                // Get the user's Id from the hidden field
-                var userId = '@Model.Id';
+                // // Get the user's Id from the hidden field
+                // var userId = '@Model.Id';
 
-                // AJAX request to update profile using API
-                $.ajax({
-                    url: '@Url.Action("UpdateById", "User")/' + userId, // Use route to generate API URL
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    data: JSON.stringify(userInfo),
-                    success: function (response) {
-                        alert('Profile updated successfully!');
-                        // Optionally, reload a part of the page or redirect
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(xhr); // Log error details to console
-                        alert('Failed to update profile. Please try again.');
-                    }
-                });
+                // // AJAX request to update profile using API
+                // $.ajax({
+                //     url: '@Url.Action("UpdateById", "User")/' + userId, // Use route to generate API URL
+                //     type: 'PUT',
+                //     contentType: 'application/json',
+                //     data: JSON.stringify(userInfo),
+                //     success: function (response) {
+                //         alert('Profile updated successfully!');
+                //         // Optionally, reload a part of the page or redirect
+                //     },
+                //     error: function (xhr, status, error) {
+                //         console.error(xhr); // Log error details to console
+                //         alert('Failed to update profile. Please try again.');
+                //     }
+                // });
             });
         });
     </script>

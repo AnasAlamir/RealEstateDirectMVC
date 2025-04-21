@@ -1,6 +1,8 @@
 ﻿@model _Services.Models.Property.Property_AllInfo
 
 @{
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var propertyId = Model.Id;
     ViewData["Title"] = "My Profile";
     ViewData["PageHeader"] = "Property Details";
 }
@@ -150,23 +152,20 @@
         <div class="col-lg-4">
             <div class="contact-owner-form mt-4">
                 <h4>Contact Owner:</h4>
-                <form>
-                    <div class="mb-3">
-                        <label for="yourName" class="form-label">Your Name</label>
-                        <input type="text" class="form-control" id="yourName" placeholder="Enter your name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="yourEmail" class="form-label">Your Email</label>
-                        <input type="email" class="form-control" id="yourEmail" placeholder="Enter your email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="yourMessage" class="form-label">Your Message</label>
-                        <textarea class="form-control" id="yourMessage" rows="4" placeholder="Write your message" required></textarea>
-                    </div>
+                <form asp-controller="Home" asp-action="SendInquiry" method="post">
+                    <input type="hidden" name="UserId" value="@userId" />
+                    <input type="hidden" name="PropertyId" value="@propertyId" />
+
                     <div class="mb-3">
                         <label for="yourPhone" class="form-label">Your Phone Number</label>
-                        <input type="text" class="form-control" id="yourPhone" placeholder="Enter your phone number" required>
+                        <input type="text" class="form-control" id="yourPhone" name="PhoneNumber" placeholder="Enter your phone number" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="yourMessage" class="form-label">Your Message</label>
+                        <textarea class="form-control" id="yourMessage" name="Message" rows="4" placeholder="Write your message" required></textarea>
+                    </div>
+
                     <button type="submit" class="btn btn-primary w-100">Send Message</button>
                 </form>
             </div>

@@ -11,6 +11,9 @@ using MVC_Project.Services.API_Services;
 using Microsoft.AspNetCore.Authorization;
 using MVC_Project.Attributes;
 using MVC_Project.Services.AuthServices;
+using _Services.Contracts;
+using System.Security.Claims;
+using _Services.Models.PropertyImage;
 
 
 namespace MVC_Project.Controllers
@@ -20,12 +23,18 @@ namespace MVC_Project.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IBase_API_Call _base_API_Call;
         private readonly IAuthService _authService;
+        private readonly IInquiryService _inquiryService;
+        private readonly IUserService _userService;
+        private readonly IPropertyService _propertyService;
 
-        public HomeController(ILogger<HomeController> logger, IBase_API_Call base_API_Call, IAuthService authService)
+        public HomeController(ILogger<HomeController> logger, IBase_API_Call base_API_Call, IAuthService authService, IInquiryService inquiryService, IUserService userService, IPropertyService propertyService)
         {
             _logger = logger;
             _base_API_Call = base_API_Call;
             _authService = authService;
+            _inquiryService = inquiryService;
+            _userService = userService;
+            _propertyService = propertyService;
         }
         [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult Index()
@@ -112,11 +121,16 @@ namespace MVC_Project.Controllers
 
             return View("/Views/Home/PropertyDetails.cshtml", property);
         }
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
+        public IActionResult SendInquiry(_Services.Models.Inquiry.Inquiry_Create inquiryCreate)
+        {
+            _inquiryService.CreateInquiry(inquiryCreate);
+            return RedirectToAction("PropertyDetails", new { id = inquiryCreate.PropertyId });
+        }
 
         [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult Profile()
         {
-            // ?????? ??? ?????? ?????????? ?? Claims
             var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 
             if (string.IsNullOrEmpty(email))
@@ -124,12 +138,8 @@ namespace MVC_Project.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // ?????? ??? ??????? ???????? ?? API
             var user = _base_API_Call.GetUserInfo(email);
 
-            // ????? ???????? ?? ??????
-            //HttpContext.Session.SetString("User", JsonConvert.SerializeObject(user));
-            //ViewBag.User = JsonConvert.SerializeObject(user);
             ViewBag.User = user;
             return View(user);
         }
@@ -151,7 +161,56 @@ namespace MVC_Project.Controllers
 
             return PartialView("/Views/Partial_Views/_myProfilePartial.cshtml", user);
         }
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
+        public IActionResult UpdateuserInfo(_Services.Models.User.User_Update user_Update)
+        {
+            var id = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            _userService.UpdateUser(int.Parse(id), user_Update);
+            return RedirectToAction("Profile");
+        }
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
+        public IActionResult SubmitNewProperty(Property_CreateViewModel model)
+        {
+            var ownerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var imageUrls = new List<PropertyImage_Create>();
 
+            if (model.ImageFiles != null && model.ImageFiles.Any())
+            {
+                foreach (var file in model.ImageFiles)
+                {
+                    // Save the file and get its URL — replace with your logic
+                    var fileName = Path.GetFileName(file.FileName);
+                    var savePath = Path.Combine("wwwroot/uploads", fileName);
+                    using (var stream = new FileStream(savePath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+
+                    var relativeUrl = "/uploads/" + fileName;
+                    imageUrls.Add(new PropertyImage_Create { ImageUrl = relativeUrl });
+                }
+            }
+            _Services.Models.Property.Property_Create property_Create = new _Services.Models.Property.Property_Create
+            {
+                OwnerId = int.Parse(ownerId),
+                Title = model.Title,
+                Description = model.Description,
+                Price = model.Price,
+                Location = model.Location,
+                City = model.City,
+                Area = model.Area,
+                PropertyType = model.PropertyType,
+                Bedrooms = model.Bedrooms,
+                Bathrooms = model.Bathrooms,
+                YearBuilt = model.YearBuilt,
+                Status = model.Status,
+                Amenities = model.Amenities,
+                Images = imageUrls
+            };
+
+            _propertyService.CreateProperty(property_Create);
+            return RedirectToAction("Profile");
+        }
         [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult MyPropertiesPartial()
         {
@@ -171,24 +230,24 @@ namespace MVC_Project.Controllers
             var properties = _base_API_Call.GetPropertyList(user.PropertiesId);
             return PartialView("/Views/Partial_Views/_myPropertiesPartial.cshtml", properties);
         }
-        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
-        public IActionResult FavoritedPropertiesPartial()
-        {
-            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-            if (string.IsNullOrEmpty(email))
-            {
-                return RedirectToAction("Profile");
-            }
+        //[ServiceFilter(typeof(JwtAuthorizeAttribute))]
+        //public IActionResult FavoritedPropertiesPartial()
+        //{
+        //    var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        //    if (string.IsNullOrEmpty(email))
+        //    {
+        //        return RedirectToAction("Profile");
+        //    }
 
-            var user = _base_API_Call.GetUserInfo(email);
+        //    var user = _base_API_Call.GetUserInfo(email);
 
-            if (user == null)
-            {
-                return RedirectToAction("Profile");
-            }
-            var properties = _base_API_Call.GetPropertyList(user.FavoriteId);
-            return PartialView("/Views/Partial_Views/_favoritedPropertiesPartial.cshtml", properties);
-        }
+        //    if (user == null)
+        //    {
+        //        return RedirectToAction("Profile");
+        //    }
+        //    var properties = _base_API_Call.GetPropertyList(user.FavoriteId);
+        //    return PartialView("/Views/Partial_Views/_favoritedPropertiesPartial.cshtml", properties);
+        //}
         [ServiceFilter(typeof(JwtAuthorizeAttribute))]
         public IActionResult MassagesPartial()
         {
@@ -215,10 +274,10 @@ namespace MVC_Project.Controllers
             return PartialView("/Views/Partial_Views/_submitPropertyPartial.cshtml");
         }
 
-        public IActionResult ChangePasswordPartial()
-        {
-            return PartialView("/Views/Partial_Views/_changePasswordPartial.cshtml");
-        }
+        //public IActionResult ChangePasswordPartial()
+        //{
+        //    return PartialView("/Views/Partial_Views/_changePasswordPartial.cshtml");
+        //}
 
         public IActionResult Privacy()
         {
