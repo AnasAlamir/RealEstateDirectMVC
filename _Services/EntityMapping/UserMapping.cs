@@ -37,6 +37,8 @@ namespace _Services.EntityMapping
                 PhoneNumber = user.PhoneNumber,
                 Address = user.Address,
                 ProfilePicture = user.ProfilePicture,
+                RefreshToken = user.RefreshToken,
+                RefreshTokenExpiryTime = user.RefreshTokenExpiryTime,  
 
                 PropertiesId = user.Properties.Select(i => i.Id).ToList(),
                 InquiriesId = user.Inquiries.Select(i => i.Id).ToList(),

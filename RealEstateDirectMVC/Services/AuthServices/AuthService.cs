@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MVC_Project.Controllers;
+using MVC_Project.Models.Token;
 using MVC_Project.ViewModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -49,7 +50,7 @@ namespace MVC_Project.Services.AuthServices
             _userService.CreateUser(user_Create);
         }
 
-        public string Login(LoginViewModel securityUserDto)
+        public TokenResponseDto Login(LoginViewModel securityUserDto)
         {
             User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
             if (user_Basic == null)
@@ -70,8 +71,12 @@ namespace MVC_Project.Services.AuthServices
             {
                 return null; // Invalid password
             }
-
-            return GenerateJwtToken(user_Basic);
+            var response = new TokenResponseDto
+            {
+                AccessToken = GenerateJwtToken(user_Basic),
+                RefreshToken = GenerateAndStoreRefreshToken(user_Basic)
+            };
+            return response;
         }
 
         //====== Helper Methods ======
@@ -110,7 +115,7 @@ namespace MVC_Project.Services.AuthServices
                 issuer: _configuration.GetValue<string>("AppSettings:Issuer"),
                 audience: _configuration.GetValue<string>("AppSettings:Audience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(10),
                 signingCredentials: creds
             );
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
@@ -140,6 +145,50 @@ namespace MVC_Project.Services.AuthServices
             {
                 return null;
             }
+        }
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+        private string GenerateAndStoreRefreshToken(User_Basic user)
+        {
+            var refreshToken = GenerateRefreshToken();
+            var userUpdate = new User_Update
+            {
+                RefreshToken = refreshToken,
+                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30)
+            };
+            _userService.UpdateUser(user.Id, userUpdate);
+            return refreshToken;
+        }
+        private User_Basic? ValidateRefrshToken(RefreshTokenRequestDto refreshTokenRequestDto)
+        {
+            var user = _userService.GetUserById(refreshTokenRequestDto.UserId);
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow || 
+                    user.RefreshToken != refreshTokenRequestDto.RefreshToken)
+            {
+                return null;
+            }
+            return user;
+        }
+
+        public TokenResponseDto RefreshTokens(RefreshTokenRequestDto refreshTokenRequestDto)
+        {
+            var user = ValidateRefrshToken(refreshTokenRequestDto);
+            if (user == null)
+            {
+                return null;
+            }
+            return new TokenResponseDto
+            {
+                AccessToken = GenerateJwtToken(user),
+                RefreshToken = GenerateAndStoreRefreshToken(user)
+            };
         }
     }
 }

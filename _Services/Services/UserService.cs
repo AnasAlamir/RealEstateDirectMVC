@@ -100,6 +100,10 @@ namespace Application.Services
                     User.Address = _user.Address;
                 if (!string.IsNullOrEmpty(_user.ProfilePicture))
                     User.ProfilePicture = _user.ProfilePicture;
+                if (!string.IsNullOrEmpty(_user.RefreshToken))
+                    User.RefreshToken = _user.RefreshToken;
+                if (_user.RefreshTokenExpiryTime != null)
+                    User.RefreshTokenExpiryTime = _user.RefreshTokenExpiryTime;
 
 
                 _unitOfWork.User.Update(User);

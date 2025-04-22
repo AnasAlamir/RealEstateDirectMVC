@@ -29,6 +29,8 @@ namespace application.DataAccess.Models
 
         public string? Address { get; set; } // عنوان المستخدم
         public string ProfilePicture { get; set; } // صورة الملف الشخصي
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; } 
 
 
 

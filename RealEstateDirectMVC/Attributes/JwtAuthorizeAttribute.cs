@@ -16,7 +16,7 @@ namespace MVC_Project.Attributes
         }
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            var token = context.HttpContext.Request.Cookies["jwt"];
+            var token = context.HttpContext.Request.Cookies["AccessToken"];
             if (string.IsNullOrEmpty(token))
             {
                 context.Result = new RedirectToActionResult("Login", "Account", null);

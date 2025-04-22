@@ -15,6 +15,8 @@ namespace _Services.Models.User
         public string PhoneNumber { get; set; }
         public string? Address { get; set; }
         public string ProfilePicture { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
 
         public IEnumerable<int> PropertiesId { get; set; } 
         public IEnumerable<int> InquiriesId { get; set; } 

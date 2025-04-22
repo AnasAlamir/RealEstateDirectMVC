@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using _Services.Contracts;
+using Microsoft.AspNetCore.Mvc;
+using MVC_Project.Attributes;
+using MVC_Project.Models.Token;
 using MVC_Project.Services.AuthServices;
 using MVC_Project.ViewModel;
 
@@ -7,6 +10,7 @@ namespace MVC_Project.Controllers
     public class AccountController : Controller
     {
         private readonly IAuthService _authService;
+
 
         public AccountController(IAuthService authService)
         {
@@ -18,23 +22,30 @@ namespace MVC_Project.Controllers
         }
         public IActionResult Login2(LoginViewModel model)
         {
-            var token = _authService.Login(model);
-            if (token == null)
+            var tokenResponse = _authService.Login(model);
+            if (tokenResponse.AccessToken == null)
             {
                 return RedirectToAction("Properties", "Home");
             }
-            Response.Cookies.Append("jwt", token, new CookieOptions
+            Response.Cookies.Append("AccessToken", tokenResponse.AccessToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // set to false only if you're testing without HTTPS
+                Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(30)
+                Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+            });
+            Response.Cookies.Append("RefreshToken", tokenResponse.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
             });
             return RedirectToAction("Index", "Home");
         }
         public IActionResult Logout()
         {
-            Response.Cookies.Delete("jwt");
+            Response.Cookies.Delete("AccessToken");
             return RedirectToAction("Login", "Account");
         }
         public IActionResult Register()
@@ -54,6 +65,37 @@ namespace MVC_Project.Controllers
             }
 
         }
-        
+        [ServiceFilter(typeof(JwtAuthorizeAttribute))]
+        public IActionResult RefreshToken()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var refreshToken = Request.Cookies["RefreshToken"];
+            var request = new RefreshTokenRequestDto
+            {
+                UserId = int.Parse(userId),
+                RefreshToken = refreshToken
+            };
+            var tokenResponse = _authService.RefreshTokens(request);
+            if (tokenResponse.AccessToken == null || tokenResponse.RefreshToken == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            Response.Cookies.Append("AccessToken", tokenResponse.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+            });
+            Response.Cookies.Append("RefreshToken", tokenResponse.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+            return RedirectToAction("Index", "Home");
+        }
+
     }
 }
