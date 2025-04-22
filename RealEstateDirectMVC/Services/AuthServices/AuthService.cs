@@ -8,6 +8,7 @@ using MVC_Project.Controllers;
 using MVC_Project.ViewModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace MVC_Project.Services.AuthServices
@@ -23,40 +24,76 @@ namespace MVC_Project.Services.AuthServices
         }
         public void Register(RegisterViewModel securityUserDto)
         {
-            _Services.Models.User.User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
+            User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
             if (user_Basic?.Email == securityUserDto.Email)
             {
-                throw new Exception("user already exists");
+                throw new Exception("User already exists");
             }
-            var hasher = new PasswordHasher<User_Basic>();
-            string hashedPassword = hasher.HashPassword(user_Basic, securityUserDto.Password);
+
+            // Generate salt and hash password (SHA-256)
+            string salt = GenerateSalt();
+            string hashedPassword = HashWithSHA256(securityUserDto.Password, salt);
+
+            // Combine salt + hash (format: "salt:hash")
+            string combinedHash = $"{salt}:{hashedPassword}";
+
             User_Create user_Create = new User_Create
             {
                 Email = securityUserDto.Email,
-                PasswordHash = hashedPassword,
+                PasswordHash = combinedHash, // Store in existing column
                 F_Name = securityUserDto.F_Name,
                 L_Name = securityUserDto.L_Name,
                 PhoneNumber = securityUserDto.PhoneNumber,
             };
+
             _userService.CreateUser(user_Create);
-            //return _userService.GetUserByEmail(user_Create.Email); ;///tmp
         }
+
         public string Login(LoginViewModel securityUserDto)
         {
-            _Services.Models.User.User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
+            User_Basic user_Basic = _userService.GetUserByEmail(securityUserDto.Email);
             if (user_Basic == null)
             {
                 return null; // Invalid email
             }
-            var hasher = new PasswordHasher<User_Basic>();
-            // Verify a password
-            var result = hasher.VerifyHashedPassword(user_Basic, user_Basic.PasswordHash, securityUserDto.Password);
-            if (result == PasswordVerificationResult.Failed)
+
+            // Split stored "salt:hash"
+            string[] parts = user_Basic.PasswordHash.Split(':');
+            if (parts.Length != 2) return null; // Invalid format
+
+            string salt = parts[0];
+            string storedHash = parts[1];
+
+            // Verify password
+            string hashedInput = HashWithSHA256(securityUserDto.Password, salt);
+            if (hashedInput != storedHash)
             {
                 return null; // Invalid password
-
             }
-            return GenerateJwtToken(user_Basic); // Generate your JWT token here
+
+            return GenerateJwtToken(user_Basic);
+        }
+
+        //====== Helper Methods ======
+        private string GenerateSalt(int size = 16)
+        {
+            byte[] saltBytes = new byte[size];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(saltBytes);
+            }
+            return Convert.ToBase64String(saltBytes);
+        }
+
+        private string HashWithSHA256(string password, string salt)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                string saltedPassword = password + salt;
+                byte[] bytes = Encoding.UTF8.GetBytes(saltedPassword);
+                byte[] hash = sha256.ComputeHash(bytes);
+                return Convert.ToBase64String(hash);
+            }
         }
         private string GenerateJwtToken(User_Basic user)
         {

@@ -147,28 +147,31 @@
                 </ul>
             </div>
         </div>
+        @if(int.Parse(userId) != Model.OwnerId)
+        {
+            <!-- Contact Form -->
+            <div class="col-lg-4">
+                <div class="contact-owner-form mt-4">
+                    <h4>Contact Owner:</h4>
+                    <form asp-controller="Home" asp-action="SendInquiry" method="post">
+                        <input type="hidden" name="UserId" value="@userId" />
+                        <input type="hidden" name="PropertyId" value="@propertyId" />
 
-        <!-- Contact Form -->
-        <div class="col-lg-4">
-            <div class="contact-owner-form mt-4">
-                <h4>Contact Owner:</h4>
-                <form asp-controller="Home" asp-action="SendInquiry" method="post">
-                    <input type="hidden" name="UserId" value="@userId" />
-                    <input type="hidden" name="PropertyId" value="@propertyId" />
+                        <div class="mb-3">
+                            <label for="yourPhone" class="form-label">Your Phone Number</label>
+                            <input type="text" class="form-control" id="yourPhone" name="PhoneNumber" placeholder="Enter your phone number" required>
+                        </div>
 
-                    <div class="mb-3">
-                        <label for="yourPhone" class="form-label">Your Phone Number</label>
-                        <input type="text" class="form-control" id="yourPhone" name="PhoneNumber" placeholder="Enter your phone number" required>
-                    </div>
+                        <div class="mb-3">
+                            <label for="yourMessage" class="form-label">Your Message</label>
+                            <textarea class="form-control" id="yourMessage" name="Message" rows="4" placeholder="Write your message" required></textarea>
+                        </div>
 
-                    <div class="mb-3">
-                        <label for="yourMessage" class="form-label">Your Message</label>
-                        <textarea class="form-control" id="yourMessage" name="Message" rows="4" placeholder="Write your message" required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Send Message</button>
-                </form>
+                        <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                    </form>
+                </div>
             </div>
-        </div>
+        }
+        
     </div>
 </div>

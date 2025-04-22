@@ -122,7 +122,7 @@ namespace _Services.Services
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("حدث خطأ أثناء إنشاء الاستفسار.", ex);
+                throw new ApplicationException("user cant inquiry himself.", ex);
             }
         }
 
