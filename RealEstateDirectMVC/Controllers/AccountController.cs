@@ -23,18 +23,18 @@ namespace MVC_Project.Controllers
         public IActionResult Login2(LoginViewModel model)
         {
             var tokenResponse = _authService.Login(model);
-            if (tokenResponse.AccessToken == null)
+            if (tokenResponse?.AccessToken == null)
             {
-                return RedirectToAction("Properties", "Home");
+                return RedirectToAction("Login", "Account");
             }
-            Response.Cookies.Append("AccessToken", tokenResponse.AccessToken, new CookieOptions
+            Response.Cookies.Append("AccessToken", tokenResponse?.AccessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(10)
             });
-            Response.Cookies.Append("RefreshToken", tokenResponse.RefreshToken, new CookieOptions
+            Response.Cookies.Append("RefreshToken", tokenResponse?.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
@@ -76,18 +76,18 @@ namespace MVC_Project.Controllers
                 RefreshToken = refreshToken
             };
             var tokenResponse = _authService.RefreshTokens(request);
-            if (tokenResponse.AccessToken == null || tokenResponse.RefreshToken == null)
+            if (tokenResponse?.AccessToken == null || tokenResponse?.RefreshToken == null)
             {
                 return RedirectToAction("Login", "Account");
             }
-            Response.Cookies.Append("AccessToken", tokenResponse.AccessToken, new CookieOptions
+            Response.Cookies.Append("AccessToken", tokenResponse?.AccessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(10)
             });
-            Response.Cookies.Append("RefreshToken", tokenResponse.RefreshToken, new CookieOptions
+            Response.Cookies.Append("RefreshToken", tokenResponse?.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
