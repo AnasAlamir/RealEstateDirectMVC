@@ -1,4 +1,5 @@
-﻿using API_Project.DataAccess.Models;
+﻿using _DataAccess.helperEncryption;
+using API_Project.DataAccess.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -27,7 +28,12 @@ namespace application.DataAccess.Models
         [Required]
         public string PhoneNumber { get; set; } // رقم التليفون
 
-        public string? Address { get; set; } // عنوان المستخدم
+        private string? _address;
+        public string? Address
+        {
+            get => DesHelper.Decrypt(_address);
+            set => _address = DesHelper.Encrypt(value);
+        }
         public string ProfilePicture { get; set; } // صورة الملف الشخصي
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; } 

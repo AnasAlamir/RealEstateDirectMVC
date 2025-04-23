@@ -1,4 +1,5 @@
-﻿using application.DataAccess.Models;
+﻿using _DataAccess.helperEncryption;
+using application.DataAccess.Models;
 
 namespace API_Project.DataAccess.Models
 {
@@ -8,7 +9,12 @@ namespace API_Project.DataAccess.Models
         public int UserId { get; set; } // الرقم التعريفي للمستخدم اللي بعت الاستفسار (Foreign Key)
         public int PropertyId { get; set; } // الرقم التعريفي للعقار اللي عليه الاستفسار (Foreign Key)
         public string PhoneNumber { get; set; } // رقم الهاتف للشخص الذي يريد الاستفسار
-        public string Message { get; set; } // الرسالة أو الاستفسار
+        private string _message;
+        public string Message
+        {
+            get => DesHelper.Decrypt(_message);
+            set => _message = DesHelper.Encrypt(value);
+        }
         public DateTime DateSent { get; set; } // تاريخ إرسال الاستفسار
 
         // العلاقات
